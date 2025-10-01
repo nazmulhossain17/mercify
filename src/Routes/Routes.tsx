@@ -5,11 +5,13 @@ import Main from "@/components/default-layout/Main";
 import NotFoundPage from "@/components/Not-found/Notfound";
 import AboutPage from "@/pages/about/About";
 import Admin from "@/pages/admin/Admin";
+import AdminFeePage from "@/pages/admin/admin-fee/AdminFeePage";
 import AdminSettingsPage from "@/pages/admin/admin-setting/admin-settings";
 import AdminCMS from "@/pages/admin/content/Content-managment";
 import DonationsPage from "@/pages/admin/donaton/admin-donation";
 import AdminOverview from "@/pages/admin/overview/Overview";
 import ReportsPage from "@/pages/admin/reports/admin-report";
+import TotalLoan from "@/pages/admin/totalloan/TotalLoan";
 import ApplicationForm from "@/pages/application-form/application-form";
 import ApplyLoanPage from "@/pages/apply-loan/Applyloan";
 import ContactPage from "@/pages/contact/Contact";
@@ -193,6 +195,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "admin-fee",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <AdminFeePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "donations",
         element: (
           <ProtectedRoute requiredRole="admin">
@@ -213,6 +223,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRole="admin">
             <AdminCMS />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "total-loans",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <TotalLoan />
           </ProtectedRoute>
         ),
       },

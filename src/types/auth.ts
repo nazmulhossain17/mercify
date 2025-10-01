@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface User {
   id: string;
   fullName: string;
@@ -6,7 +7,9 @@ export interface User {
   active: boolean;
   phoneNumber: string;
   referalId: string;
+  status: string;
   loanEligibility: boolean;
+  applicationId?: string;
   drivingLicense: string;
   createdAt: string;
 }
@@ -21,9 +24,11 @@ export interface MemberProfile {
   drivingLicense: string;
   active: boolean;
   phoneNumber: string;
+  status: string;
   referalId: string;
   loanEligibility: boolean;
   createdAt: string;
+  membership?: any;
   updatedAt: string;
   __v: number;
 }

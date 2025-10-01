@@ -4,6 +4,7 @@ import { selectUser } from "@/store/selectors/authSelectors";
 import { Outlet } from "react-router-dom";
 import DashboardHeader from "../Dashboard/header";
 import DashboardSidebar from "../Dashboard/sidebar";
+import Footer from "../Footer/Footer";
 
 const DashboardLayout = () => {
   const user = useAppSelector(selectUser);
@@ -31,6 +32,7 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+      <Footer />
     </div>
   );
 };

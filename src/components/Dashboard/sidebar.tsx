@@ -7,7 +7,6 @@ import {
   User,
   Menu,
   X,
-  Share2Icon,
   DollarSign,
 } from "lucide-react";
 import { useState } from "react";

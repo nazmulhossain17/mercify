@@ -20,6 +20,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { PendingApplications } from "@/components/admin/pending-application";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const AdminOverview = () => {
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -103,68 +104,62 @@ const AdminOverview = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
-        <StatsCard
-          title="Total Users"
-          value={dashboardData.totalUsers.toLocaleString()}
-          change="+12.5% from previous month"
-          changeType="positive"
-          icon={Users}
-        />
-        <StatsCard
-          title="Active Loans"
-          value={dashboardData.activeLoans.toLocaleString()}
-          change="+5.3% from previous month"
-          changeType="positive"
-          icon={FileText}
-        />
-        <StatsCard
-          title="Total Mercyfi Balance"
-          value={`$${dashboardData.totalMercifyBalance.toLocaleString()}`}
-          change="+18.2% from previous month"
-          changeType="positive"
-          icon={DollarSign}
-        />
-        <StatsCard
-          title="Pending Applications"
-          value={dashboardData.pendingApplications.toLocaleString()}
-          change="-2.4% from previous month"
-          changeType="negative"
-          icon={Clock}
-        />
-        <StatsCard
-          title="Total Donations"
-          value={`$${dashboardData.totalDonations.toLocaleString()}`}
-          change="+25.8% from previous month"
-          changeType="positive"
-          icon={Heart}
-        />
-        <StatsCard
-          title="Administration Fee"
-          value={`$${dashboardData.adminFee.toLocaleString()}`}
-          change="+15.3% from previous month"
-          changeType="positive"
-          icon={Settings}
-        />
+        <Link to="/admin/users" className="hover:opacity-90 transition">
+          <StatsCard
+            title="Total Users"
+            value={dashboardData.totalUsers.toLocaleString()}
+            change="+12.5% from previous month"
+            changeType="positive"
+            icon={Users}
+          />
+        </Link>
+        <Link to="/admin/total-loans" className="hover:opacity-90 transition">
+          <StatsCard
+            title="Active Loans"
+            value={dashboardData.activeLoans.toLocaleString()}
+            change="+5.3% from previous month"
+            changeType="positive"
+            icon={FileText}
+          />
+        </Link>
+        <a href="#">
+          <StatsCard
+            title="Total Mercyfi Balance"
+            value={`$${dashboardData.totalMercifyBalance.toLocaleString()}`}
+            change="+18.2% from previous month"
+            changeType="positive"
+            icon={DollarSign}
+          />
+        </a>
+        <a href="#">
+          <StatsCard
+            title="Pending Applications"
+            value={dashboardData.pendingApplications.toLocaleString()}
+            change="-2.4% from previous month"
+            changeType="negative"
+            icon={Clock}
+          />
+        </a>
+        <Link to="/admin/donations" className="hover:opacity-90 transition">
+          <StatsCard
+            title="Total Donations"
+            value={`$${dashboardData.totalDonations.toLocaleString()}`}
+            change="+25.8% from previous month"
+            changeType="positive"
+            icon={Heart}
+          />
+        </Link>
+        <Link to="/admin/admin-fee" className="hover:opacity-90 transition">
+          <StatsCard
+            title="Administration Fee"
+            value={`$${dashboardData.adminFee.toLocaleString()}`}
+            change="+15.3% from previous month"
+            changeType="positive"
+            icon={Settings}
+          />
+        </Link>
 
         {/* Total Loan */}
-        <Card className="sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Settings className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Loan</p>
-                <p className="text-xl md:text-2xl font-bold text-gray-900">
-                  ${dashboardData.totalLoan.toLocaleString()}
-                </p>
-                <p className="text-xs md:text-sm text-green-600 mt-1">
-                  +15.3% from previous month
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Financial Distribution */}

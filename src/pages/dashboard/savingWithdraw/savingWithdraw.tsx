@@ -11,15 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppSelector } from "@/store/hooks";
 import { selectUser } from "@/store/selectors/authSelectors";
 import { Loader2 } from "lucide-react";
@@ -50,6 +41,7 @@ const SavingWithdrawPage: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([
     { id: "1", name: "Savings Account", balance: 1000, currency: "USD" },
   ]);
+  console.log(setAccounts);
 
   const [selectedAccount, setSelectedAccount] = useState<Account>(accounts[0]);
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -57,6 +49,7 @@ const SavingWithdrawPage: React.FC = () => {
     description: "",
     type: "withdrawal",
   });
+  console.log(setSelectedAccount);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -97,10 +90,10 @@ const SavingWithdrawPage: React.FC = () => {
     }));
   };
 
-  const handleAccountChange = (value: string) => {
-    const account = accounts.find((acc) => acc.id === value);
-    if (account) setSelectedAccount(account);
-  };
+  // const handleAccountChange = (value: string) => {
+  //   const account = accounts.find((acc) => acc.id === value);
+  //   if (account) setSelectedAccount(account);
+  // };
 
   // ✅ Withdraw API call
   const handleSubmit = async (e: React.FormEvent) => {

@@ -11,30 +11,21 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-
-interface Member {
-  _id: string;
-  fullName: string;
-  email: string;
-  role: string;
-  drivingLicense: string;
-  active: boolean;
-  phoneNumber: string;
-  referalId?: string;
-  loanEligibility: boolean;
-  createdAt: string;
-  membership?: any;
-}
+import type { MemberProfile } from "@/types/auth";
+import FreezeMemberModal from "@/components/modal/FreezMemberModal";
+import axios from "axios";
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [membershipFilter, setMembershipFilter] = useState("all");
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
+  const [memberToFreeze, setMemberToFreeze] = useState<any | null>(null);
 
   useEffect(() => {
     fetchMembers();
@@ -44,7 +35,7 @@ export default function UsersPage() {
     try {
       setLoading(true);
       // Using mock API instead of real API call
-      const res = await api.get<Member[]>("/member");
+      const res = await api.get<MemberProfile[]>("/member");
       setMembers(res.data);
     } catch (error) {
       console.error("❌ Failed to fetch members:", error);
@@ -104,6 +95,59 @@ export default function UsersPage() {
     } catch (error) {
       console.error("❌ Failed to reject member:", error);
       throw error;
+    }
+  };
+
+  const handleOpenFreezeModal = (member: any) => {
+    setMemberToFreeze(member);
+    setIsFreezeModalOpen(true);
+  };
+
+  const handleCloseFreezeModal = () => {
+    setIsFreezeModalOpen(false);
+    setMemberToFreeze(null);
+  };
+
+  // const handleFreezeConfirm = async (status: "freez" | "active") => {
+  //   if (!memberToFreeze) return;
+  //   try {
+  //     const res = await api.put(
+  //       `${import.meta.env.VITE_API_URL}/member/${memberToFreeze._id}/status`,
+  //       {
+  //         status,
+  //       }
+  //     );
+  //     console.log("✅ Freeze/Activate Response:", res.data);
+
+  //     // Update local state
+  //     setMembers((prev) =>
+  //       prev.map((m) => (m._id === memberToFreeze._id ? { ...m, status } : m))
+  //     );
+
+  //     handleCloseFreezeModal();
+  //   } catch (error) {
+  //     console.error("❌ Failed to update status:", error);
+  //   }
+  // };
+  const handleFreezeConfirm = async (status: "freez" | "active") => {
+    if (!memberToFreeze) return;
+    try {
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/member/${memberToFreeze._id}/status`,
+        {
+          status,
+        }
+      );
+      console.log("✅ Freeze/Activate Response:", res.data);
+
+      // Update local state
+      setMembers((prev) =>
+        prev.map((m) => (m._id === memberToFreeze._id ? { ...m, status } : m))
+      );
+
+      handleCloseFreezeModal();
+    } catch (error) {
+      console.error("❌ Failed to update status:", error);
     }
   };
 
@@ -399,6 +443,18 @@ export default function UsersPage() {
                           <span className="hidden sm:inline">View Details</span>
                         </button>
                       </td>
+                      <td>
+                        <button
+                          onClick={() => handleOpenFreezeModal(member)}
+                          className={`inline-flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors mr-2 ${
+                            member.status === "freez"
+                              ? "bg-green-600 text-white hover:bg-green-700"
+                              : "bg-red-600 text-white hover:bg-red-700"
+                          }`}
+                        >
+                          {member.status === "freez" ? "Activate" : "Freeze"}
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -422,6 +478,13 @@ export default function UsersPage() {
         member={selectedMember}
         onApprove={handleApprove}
         onReject={handleReject}
+      />
+
+      <FreezeMemberModal
+        isOpen={isFreezeModalOpen}
+        onClose={handleCloseFreezeModal}
+        member={memberToFreeze}
+        onConfirm={handleFreezeConfirm}
       />
     </div>
   );
