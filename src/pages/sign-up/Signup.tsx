@@ -139,15 +139,11 @@ export default function SignUpPage() {
     //   console.log("🔗 Driving license link:", formData.drivingLicense);
     // }
 
-    const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required";
       console.log("❌ Phone number validation failed - empty");
-    } else if (
-      !phoneRegex.test(formData.phoneNumber.replace(/[\s\-()]/g, ""))
-    ) {
-      newErrors.phoneNumber = "Please enter a valid phone number";
-      console.log("❌ Phone number validation failed - invalid format");
+    
     } else {
       console.log("✅ Phone number validation passed");
     }

@@ -41,20 +41,18 @@ const SavingWithdrawPage: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([
     { id: "1", name: "Savings Account", balance: 1000, currency: "USD" },
   ]);
-  console.log(setAccounts);
-
   const [selectedAccount, setSelectedAccount] = useState<Account>(accounts[0]);
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: 0,
     description: "",
     type: "withdrawal",
   });
-  console.log(setSelectedAccount);
+  console.log(setAccounts, setSelectedAccount)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // ✅ New state for API errors
 
   const user = useAppSelector(selectUser);
-  console.log(user);
   const memberid = user?.id || "";
   const [memberSavings, setMemberSavings] = useState<number | null>(null);
 
@@ -64,9 +62,7 @@ const SavingWithdrawPage: React.FC = () => {
       if (user?.id) {
         try {
           const response = await fetch(
-            `${
-              import.meta.env.VITE_API_URL
-            }/api/savings/total-savings/${memberid}`
+            `${import.meta.env.VITE_API_URL}/api/savings/total-savings/${memberid}`
           );
           const data = await response.json();
           setMemberSavings(data?.totalSavings);
@@ -90,21 +86,15 @@ const SavingWithdrawPage: React.FC = () => {
     }));
   };
 
-  // const handleAccountChange = (value: string) => {
-  //   const account = accounts.find((acc) => acc.id === value);
-  //   if (account) setSelectedAccount(account);
-  // };
-
   // ✅ Withdraw API call
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null); // Reset error before submission
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/savings/savings-withdraw/${memberid}`,
+        `${import.meta.env.VITE_API_URL}/api/savings/savings-withdraw/${memberid}`,
         {
           method: "PUT",
           headers: {
@@ -114,11 +104,14 @@ const SavingWithdrawPage: React.FC = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to withdraw savings");
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // ✅ Display backend-provided message if available
+        const msg = data?.message || "Failed to withdraw savings.";
+        setErrorMessage(msg);
+        throw new Error(msg);
+      }
 
       // Add new transaction record
       const newTransaction: Transaction = {
@@ -132,7 +125,7 @@ const SavingWithdrawPage: React.FC = () => {
 
       setTransactions((prev) => [newTransaction, ...prev]);
 
-      // Update savings balance from API response if provided
+      // Update savings balance
       if (data?.updatedSavings !== undefined) {
         setMemberSavings(data.updatedSavings);
       } else {
@@ -149,7 +142,6 @@ const SavingWithdrawPage: React.FC = () => {
       });
     } catch (error) {
       console.error("Withdraw failed:", error);
-      alert("Withdraw failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -191,10 +183,21 @@ const SavingWithdrawPage: React.FC = () => {
                 <span className="font-semibold text-gray-900">
                   {memberSavings !== null ? `$${memberSavings}` : "Loading..."}
                 </span>
+                <br />
+                <span className="text-yellow-600 text-sm">
+                  You can withdraw 60% funds from your savings account.
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-5">
+                {/* ✅ Show error message */}
+                {errorMessage && (
+                  <div className="bg-red-100 border border-red-300 text-red-700 p-3 rounded-md text-sm">
+                    {errorMessage}
+                  </div>
+                )}
+
                 <div>
                   <Label htmlFor="amount">
                     Amount ({selectedAccount.currency})

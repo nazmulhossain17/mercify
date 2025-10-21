@@ -10,12 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, TimerIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface AdminFee {
   _id: string;
   amount: number;
   memberId: MemberProfile;
+  transactionId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -135,10 +136,9 @@ const AdminFeePage: React.FC = () => {
                       📧 Email
                     </TableHead>
                     <TableHead className="text-white font-bold py-4 text-center">
-                      🎯 Role
+                      🎯 Transaction Id
                     </TableHead>
                     <TableHead className="text-white font-bold py-4 text-center">
-                      <TimerIcon />
                       Date
                     </TableHead>
                     <TableHead className="text-white font-bold py-4 text-center">
@@ -176,7 +176,7 @@ const AdminFeePage: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-center py-3 border-b border-gray-200">
                           <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                            {fee.memberId.role}
+                            {fee.transactionId}
                           </span>
                         </TableCell>
                         <TableCell className="text-center py-3 border-b border-gray-200">

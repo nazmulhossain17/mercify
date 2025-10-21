@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// import DriveImage from "@/components/DriveImage/DriveImage";
 import { useAppSelector } from "@/store/hooks";
 import { selectUser } from "@/store/selectors/authSelectors";
 import { useEffect, useState } from "react";
@@ -745,13 +746,13 @@ const MemberProfilePage: React.FC = () => {
                       Signature
                     </label>
                     <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 text-center">
-                      <a
-                        href={membershipForm.signature}
-                        target="_blank"
-                        className="cursor-pointer text-blue-600"
-                      >
-                        View Signature
-                      </a>
+                      {/* <DriveImage
+                        driveImageURL={membershipForm.signature}
+                        alt="Signature"
+                        width={300}
+                        isThumbnail
+                      /> */}
+                      <a href={membershipForm.signature} target="_blank" className="text-blue-600">Signature</a>
                     </div>
                   </div>
                 )}
@@ -950,6 +951,7 @@ const MemberProfilePage: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               City
                             </label>
+                            .
                             <input
                               type="text"
                               name="form.city"
@@ -974,7 +976,7 @@ const MemberProfilePage: React.FC = () => {
                           </div>
                         )}
                       </div>
-                    )}
+                    )}             
 
                     {(membershipFormData.monthlySavings !== undefined ||
                       membershipFormData.paymentAmount !== undefined) && (
@@ -1009,7 +1011,6 @@ const MemberProfilePage: React.FC = () => {
                         )}
                       </div>
                     )}
-
                     {membershipFormData.willRecommend !== undefined && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1027,7 +1028,7 @@ const MemberProfilePage: React.FC = () => {
                       </div>
                     )}
                   </div>
-                )}
+                )}      
               </div>
 
               <div className="flex gap-3 justify-end mt-6 pt-6 border-t">

@@ -17,11 +17,10 @@ const navigation = [
   { name: "Donations", href: "/admin/donations", icon: CircleFadingPlus },
   { name: "Reports", href: "/admin/reports", icon: FileText },
   {
-    name: "Content Management",
-    href: "/admin/content-management",
+    name: "All Contacts",
+    href: "/admin/contact-admin",
     icon: FileText,
   },
-  // { name: "Notifications", href: "/admin/notifications", icon: Bell },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -39,7 +38,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden pointer-events-auto"
           onClick={onClose}
         />
       )}
@@ -48,7 +47,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       <div
         className={cn(
           "fixed left-0 top-0 z-50 h-full w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-300 ease-in-out",
-          "lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -64,7 +62,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100%-64px)]">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (

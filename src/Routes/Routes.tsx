@@ -7,14 +7,18 @@ import AboutPage from "@/pages/about/About";
 import Admin from "@/pages/admin/Admin";
 import AdminFeePage from "@/pages/admin/admin-fee/AdminFeePage";
 import AdminSettingsPage from "@/pages/admin/admin-setting/admin-settings";
+import AllTransaction from "@/pages/admin/alltransaction/AllTransaction";
 import AdminCMS from "@/pages/admin/content/Content-managment";
 import DonationsPage from "@/pages/admin/donaton/admin-donation";
 import AdminOverview from "@/pages/admin/overview/Overview";
+import Pending from "@/pages/admin/pending/Pending";
+import { PendingPayments } from "@/pages/admin/pendingpayments/PendingPayments";
 import ReportsPage from "@/pages/admin/reports/admin-report";
 import TotalLoan from "@/pages/admin/totalloan/TotalLoan";
 import ApplicationForm from "@/pages/application-form/application-form";
 import ApplyLoanPage from "@/pages/apply-loan/Applyloan";
 import ContactPage from "@/pages/contact/Contact";
+import AdminContacts from "@/pages/dashboard/contact/AdminContact";
 import Dashboard from "@/pages/dashboard/dashboard";
 import MemberReferralPage from "@/pages/dashboard/memberReferal/MemberReferral";
 import OverviewPage from "@/pages/dashboard/overview/Overview";
@@ -211,12 +215,44 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "all-transactions",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <AllTransaction />
+          </ProtectedRoute>
+        )
+      },
+      {                                                                                                              
         path: "reports",
         element: (
           <ProtectedRoute requiredRole="admin">
             <ReportsPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "contact-admin",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <AdminContacts/>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "pending",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <Pending />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "pending-payments",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <PendingPayments />
+          </ProtectedRoute>
+        )
       },
       {
         path: "content-management",

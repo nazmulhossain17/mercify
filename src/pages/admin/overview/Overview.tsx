@@ -17,40 +17,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { PendingApplications } from "@/components/admin/pending-application";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
 const AdminOverview = () => {
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [totalMarketLoan, setTotalMarketLoan] = useState<number>(0)
 
+  // ✅ Fetch main dashboard data
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/dashboard`
-        );
-        setDashboardData(res.data);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/dashboard`)
+        setDashboardData(res.data)
       } catch (error) {
-        console.error("Error fetching dashboard:", error);
+        console.error("Error fetching dashboard:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchDashboard();
-  }, []);
+    }
+    fetchDashboard()
+  }, [])
 
-  if (loading) {
-    return <p>Loading Dashboard...</p>;
-  }
+  // ✅ Fetch total market loan separately
+  useEffect(() => {
+    const fetchTotalMarketLoan = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/loan/total-loan-market`)
+        setTotalMarketLoan(res.data.total ?? 0)
+      } catch (error) {
+        console.error("Error fetching total market loan:", error)
+      }
+    }
+    fetchTotalMarketLoan()
+  }, [])
 
-  if (!dashboardData) {
-    return <p>Failed to load dashboard</p>;
-  }
+  if (loading) return <p>Loading Dashboard...</p>
+  if (!dashboardData) return <p>Failed to load dashboard</p>
 
-  // build chartData dynamically
+  const totalFinancialValue =
+    dashboardData.totalMercifyBalance + dashboardData.totalDonations + dashboardData.adminFee + totalMarketLoan
+
+  const marketLoanPercentage = totalFinancialValue > 0 ? ((totalMarketLoan / totalFinancialValue) * 100).toFixed(1) : 0
+
   const chartData = [
     {
       name: "Total Users",
@@ -82,24 +93,22 @@ const AdminOverview = () => {
       color: "#6b7280",
       amount: `$${dashboardData.adminFee.toLocaleString()}`,
     },
-  ];
+    {
+      name: "Total Market Loan",
+      value: Number.parseFloat(marketLoanPercentage as string),
+      color: "#3b82f6",
+      amount: `$${totalMarketLoan.toLocaleString()}`,
+    },
+  ]
 
-  const totalValue =
-    dashboardData.totalMercifyBalance +
-    dashboardData.totalDonations +
-    dashboardData.adminFee +
-    dashboardData.totalLoan;
+  const totalValue = totalFinancialValue
 
   return (
     <div className="space-y-6 md:space-y-8 p-4 md:p-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-          Dashboard
-        </h1>
-        <p className="text-gray-600 mt-1 text-sm md:text-base">
-          Welcome back! Here's what's happening today.
-        </p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1 text-sm md:text-base">Welcome back! Here's what's happening today.</p>
       </div>
 
       {/* Stats Cards */}
@@ -122,16 +131,16 @@ const AdminOverview = () => {
             icon={FileText}
           />
         </Link>
-        <a href="#">
+        <Link to="/admin/all-transactions" className="hover:opacity-90 transition">
           <StatsCard
             title="Total Mercyfi Balance"
             value={`$${dashboardData.totalMercifyBalance.toLocaleString()}`}
-            change="+18.2% from previous month"
+            change="60% loan user can get"
             changeType="positive"
             icon={DollarSign}
           />
-        </a>
-        <a href="#">
+        </Link>
+        <Link to="/admin/pending">
           <StatsCard
             title="Pending Applications"
             value={dashboardData.pendingApplications.toLocaleString()}
@@ -139,7 +148,7 @@ const AdminOverview = () => {
             changeType="negative"
             icon={Clock}
           />
-        </a>
+        </Link>
         <Link to="/admin/donations" className="hover:opacity-90 transition">
           <StatsCard
             title="Total Donations"
@@ -158,20 +167,32 @@ const AdminOverview = () => {
             icon={Settings}
           />
         </Link>
-
-        {/* Total Loan */}
+        <Link to="/admin/pending-payments">
+          <StatsCard
+            title="Pending Payments"
+            value={dashboardData.pendingApplications.toLocaleString()}
+            change="All Pending Payments"
+            changeType="negative"
+            icon={Clock}
+          />
+        </Link>
+        <Link to="/admin/pending">
+          <StatsCard
+            title="Total Market Loan"
+            value={`$${totalMarketLoan.toLocaleString()}`}
+            change="All Market Loans"
+            changeType="positive"
+            icon={DollarSign}
+          />
+        </Link>
       </div>
 
       {/* Financial Distribution */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
           <div>
-            <CardTitle className="text-lg md:text-xl font-semibold">
-              Financial Distribution
-            </CardTitle>
-            <p className="text-gray-600 text-sm mt-1">
-              Visual breakdown of key financial metrics
-            </p>
+            <CardTitle className="text-lg md:text-xl font-semibold">Financial Distribution</CardTitle>
+            <p className="text-gray-600 text-sm mt-1">Visual breakdown of key financial metrics</p>
           </div>
           <Select defaultValue="current">
             <SelectTrigger className="w-full sm:w-40">
@@ -208,12 +229,8 @@ const AdminOverview = () => {
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-xl md:text-2xl font-bold text-gray-900">
-                      ${totalValue.toLocaleString()}
-                    </p>
-                    <p className="text-xs md:text-sm text-gray-600">
-                      Total Value
-                    </p>
+                    <p className="text-xl md:text-2xl font-bold text-gray-900">${totalValue.toLocaleString()}</p>
+                    <p className="text-xs md:text-sm text-gray-600">Total Value</p>
                   </div>
                 </div>
               </div>
@@ -221,36 +238,20 @@ const AdminOverview = () => {
 
             {/* Breakdown Details */}
             <div className="order-1 lg:order-2">
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4 md:mb-6">
-                Breakdown Details
-              </h3>
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4 md:mb-6">Breakdown Details</h3>
               <div className="space-y-3 md:space-y-4">
                 {chartData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between"
-                  >
+                  <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: item.color }}
-                      />
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
                       <div className="min-w-0">
-                        <p className="font-medium text-gray-900 text-sm md:text-base truncate">
-                          {item.name}
-                        </p>
-                        <p className="text-xs md:text-sm text-gray-600">
-                          {item.amount}
-                        </p>
+                        <p className="font-medium text-gray-900 text-sm md:text-base truncate">{item.name}</p>
+                        <p className="text-xs md:text-sm text-gray-600">{item.amount}</p>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="font-semibold text-gray-900 text-sm md:text-base">
-                        {item.value}%
-                      </p>
-                      <p className="text-xs md:text-sm text-green-600">
-                        +{(item.value * 0.5).toFixed(1)}%
-                      </p>
+                      <p className="font-semibold text-gray-900 text-sm md:text-base">{item.value}%</p>
+                      <p className="text-xs md:text-sm text-green-600">+{(item.value * 0.5).toFixed(1)}%</p>
                     </div>
                   </div>
                 ))}
@@ -259,10 +260,8 @@ const AdminOverview = () => {
           </div>
         </CardContent>
       </Card>
-
-      <PendingApplications />
     </div>
-  );
-};
+  )
+}
 
-export default AdminOverview;
+export default AdminOverview

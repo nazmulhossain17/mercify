@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import MemberReferralPage from "../dashboard/memberReferal/MemberReferral";
+// import MemberReferralPage from "../dashboard/memberReferal/MemberReferral";
 
 export default function ReferralPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -252,7 +252,7 @@ export default function ReferralPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <MemberReferralPage />
+      {/* <MemberReferralPage /> */}
     </div>
   );
 }

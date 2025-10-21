@@ -2,17 +2,26 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PiggyBank, Calendar, CheckCircle, Plus } from "lucide-react";
+import { PiggyBank, CheckCircle, Plus, DollarSign, X } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { selectUser } from "@/store/selectors/authSelectors";
 import { addMonths, format, isAfter, parseISO } from "date-fns";
 import { useEffect, useState } from "react";
 import LoanReminderModal from "@/components/modal/loanReminderModal";
+import { useLoanData } from "@/utils/hooks/useLoanData";
+import LoanPaymentInfo from "@/components/MonthlyLoan/LoanPAymentInfo";
+import LoanBalanceInfo from "@/components/LoanBalanceInfo/LoanBalanceInfo";
+
+
 
 const OverviewPage = () => {
   const user = useAppSelector(selectUser);
   const memberId = user?.id || "";
   const [memberSavings, setMemberSavings] = useState<number | null>(null);
+  const [showAdminFeeModal, setShowAdminFeeModal] = useState(false);
+  
+  // Use the loan data hook
+  const { loanData, loading: loanLoading } = useLoanData(memberId);
 
   // Fetch member savings
   useEffect(() => {
@@ -35,6 +44,76 @@ const OverviewPage = () => {
     fetchMemberSavings();
   }, [memberId]);
 
+  // Show admin fee modal on browser refresh
+  useEffect(() => {
+    const handlePageLoad = () => {
+      // Check if this is a page refresh
+      const navigationEntries = performance.getEntriesByType("navigation");
+      if (navigationEntries.length > 0) {
+        const navEntry = navigationEntries[0] as PerformanceNavigationTiming;
+        if (navEntry.type === "reload") {
+          setShowAdminFeeModal(true);
+        }
+      }
+      
+      // Fallback: check sessionStorage
+      const isRefreshed = sessionStorage.getItem("pageRefreshed");
+      if (!isRefreshed) {
+        sessionStorage.setItem("pageRefreshed", "true");
+        setShowAdminFeeModal(true);
+      }
+    };
+
+    // Method 1: Using Performance Navigation Timing API
+    if (performance.getEntriesByType("navigation").length > 0) {
+      handlePageLoad();
+    } else {
+      // Method 2: Using window.performance
+      if (window.performance) {
+        const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+        if (navigation && navigation.type === "reload") {
+          setShowAdminFeeModal(true);
+        }
+      }
+      
+      // Method 3: Fallback using sessionStorage
+      const pageRefreshCount = sessionStorage.getItem('refreshCount');
+      if (!pageRefreshCount) {
+        sessionStorage.setItem('refreshCount', '1');
+        setShowAdminFeeModal(true);
+      }
+    }
+
+    // Method 4: Listen for beforeunload to detect refresh
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('isRefreshing', 'true');
+    };
+
+    const handleLoad = () => {
+      const isRefreshing = sessionStorage.getItem('isRefreshing');
+      if (isRefreshing === 'true') {
+        setShowAdminFeeModal(true);
+        sessionStorage.removeItem('isRefreshing');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('load', handleLoad);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('load', handleLoad);
+    };
+  }, []);
+
+  // Alternative simpler approach - uncomment if above is too complex
+  /*
+  useEffect(() => {
+    // Simple approach: show modal on every component mount (which happens on refresh)
+    setShowAdminFeeModal(true);
+  }, []);
+  */
+
   if (!user) return <div>Loading...</div>;
 
   // Loan eligibility check
@@ -55,6 +134,64 @@ const OverviewPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Administrative Fee Payment Modal */}
+      {showAdminFeeModal && (
+        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-lg shadow-xl max-w-md w-full"
+          >
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Administrative Fee Payment
+              </h3>
+              <button
+                onClick={() => setShowAdminFeeModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <DollarSign className="w-8 h-8 text-amber-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">
+                  Payment Required
+                </h4>
+                <p className="text-gray-600">
+                  Please pay your administrative fee within <span className="font-semibold text-amber-600">January 15th</span> to avoid any service interruptions.
+                </p>
+              </div>
+              
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-amber-800 text-center">
+                  <span className="font-semibold">Due Date:</span> January 15, 2024
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 p-6 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowAdminFeeModal(false)}
+                className="flex-1 border-gray-300 hover:bg-gray-50"
+              >
+                Close
+              </Button>
+              <Link to="/dashboard/payment" className="flex-1">
+                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                  Pay Now
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Welcome Section */}
       <motion.div variants={itemVariants} initial="hidden" animate="visible">
         <Card className="border-0 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl">
@@ -70,12 +207,20 @@ const OverviewPage = () => {
                     {format(createdDate || new Date(), "MMMM d, yyyy")}
                   </span>
                 </p>
-                {memberId && <LoanReminderModal memberId={memberId} />}
+                {memberId && (
+                <>
+                  <LoanReminderModal memberId={memberId} />
+                  <LoanPaymentInfo memberId={memberId} />
+                </>
+              )}
+
               </div>
               {user.active && (
                 <div className="text-right">
-                  <p className="text-emerald-100 text-sm">Total Savings</p>
+                  <p className="text-emerald-100 text-sm">Total Balance</p>
                   <p className="text-3xl font-bold">${memberSavings || 0}</p>
+
+                  {memberId && <LoanBalanceInfo memberId={memberId} />}
                 </div>
               )}
             </div>
@@ -112,31 +257,6 @@ const OverviewPage = () => {
               </Card>
             </motion.div>
 
-            {/* Admin Fee Card */}
-            <motion.div
-              variants={itemVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-blue-100 rounded-lg p-3">
-                      <Calendar className="h-6 w-6 text-blue-700" />
-                    </div>
-                    <Link
-                      to="/dashboard/payment"
-                      className="flex items-center justify-end ml-4 group"
-                    >
-                      <p className="text-2xl font-bold text-gray-500 hover:text-blue-600 transition-colors">
-                        Pay Administrator Fee
-                      </p>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
             {/* Loan Eligibility Card */}
             <motion.div
               variants={itemVariants}
@@ -161,6 +281,42 @@ const OverviewPage = () => {
                 </CardContent>
               </Card>
             </motion.div>
+
+            {/* Loan Requested Card */}
+            <motion.div
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 bg-blue-100 rounded-lg p-3">
+                      <DollarSign className="h-6 w-6 text-blue-700" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">
+                        Loan Requested
+                      </p>
+                      <p className="text-lg font-bold text-red-600">
+                        {loanLoading ? (
+                          <span className="text-sm text-red-500">Loading...</span>
+                        ) : loanData ? (
+                          `$${loanData.amountRequested}`
+                        ) : (
+                          <span className="text-sm text-gray-500">No loan</span>
+                        )}
+                      </p>
+                      {loanData && (
+                        <p className="text-xs text-gray-500 capitalize">
+                          Status: {loanData.status}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
           {/* Apply for Loan */}
@@ -178,15 +334,28 @@ const OverviewPage = () => {
                   </h3>
                   <p className="text-gray-600">
                     {isEligible
-                      ? "You are eligible to apply for an interest-free loan. Start your application now."
+                      ? loanData 
+                        ? `You have a ${loanData.status} loan application for $${loanData.amountRequested}.`
+                        : "You are eligible to apply for an interest-free loan. Start your application now."
                       : "You are not eligible to apply for a loan yet. Please wait until 6 months after your account creation date."}
                   </p>
+                  {loanData && (
+                    <>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Purpose: {loanData.purpose} • Applied on: {format(new Date(loanData.applicationDate), "MMM d, yyyy")}
+                    </p>
+                    {/* <p className="text-sm text-red-500">
+                      {loanData.note}
+                    </p> */}
+                    </>
+                    
+                  )}
                 </div>
                 {isEligible ? (
                   <Link to="/dashboard/apply-loan">
                     <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700">
                       <Plus className="w-4 h-4 mr-2" />
-                      Apply Now
+                      {loanData ? "View Application" : "Apply Now"}
                     </Button>
                   </Link>
                 ) : (

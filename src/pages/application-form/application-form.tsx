@@ -1,34 +1,128 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Edit, FileText, AlertCircle, Clock, Plus } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Edit, FileText, AlertCircle, Clock, Plus } from 'lucide-react';
 
 export default function ApplicationForm() {
   const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
   const [applicationForm, setApplicationForm] = useState({
     subject: "",
-    priority: "medium",
-    category: "",
+    priorityLevel: "medium", // Changed from 'priority' to 'priorityLevel' to match API
     message: "",
-    contactPreference: "email",
     attachments: [] as File[],
   });
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleApplicationSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmittingApplication(true);
-    setTimeout(() => {
-      setIsSubmittingApplication(false);
-      alert("Application submitted successfully!");
-    }, 1500);
-  };
+const handleApplicationSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  setSuccess(null);
+  
+
+  if (!applicationForm.subject.trim()) {
+    setError("Subject is required");
+    return;
+  }
+
+  setIsSubmittingApplication(true);
+
+  try {
+    const payload = {
+      subject: applicationForm.subject.trim(),
+      priorityLevel: applicationForm.priorityLevel,
+      message: applicationForm.message.trim(),
+    };
+
+    console.log('Sending payload:', payload); // Debug log
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/contact-admin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responseData = await response.json();
+    console.log('Response:', responseData); // Debug log
+
+    if (!response.ok) {
+      throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    setSuccess("Application submitted successfully!");
+    
+    // Reset form
+    setApplicationForm({
+      subject: "",
+      priorityLevel: "medium",
+      message: "",
+      attachments: [],
+    });
+
+  } catch (err) {
+    console.error('Error submitting application:', err);
+    setError(err instanceof Error ? err.message : 'Failed to submit application. Please try again.');
+  } finally {
+    setIsSubmittingApplication(false);
+  }
+};
+
+  // Alternative version if your API expects JSON instead of FormData
+  // const handleApplicationSubmitJSON = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setError(null);
+  //   setSuccess(null);
+    
+  //   // Validation
+  //   if (applicationForm.message.length < 20) {
+  //     setError("Message must be at least 20 characters long");
+  //     return;
+  //   }
+
+  //   setIsSubmittingApplication(true);
+
+  //   try {
+  //     const payload = {
+  //       subject: applicationForm.subject,
+  //       priorityLevel: applicationForm.priorityLevel,
+  //       message: applicationForm.message,
+  //       // Note: Files would need to be handled separately if using JSON
+  //     };
+
+  //     const response = await fetch('http://localhost:3000/api/contact-admin', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.error || 'Failed to submit application');
+  //     }
+
+  //     const data = await response.json();
+  //     setSuccess("Application submitted successfully!");
+      
+  //     // Reset form
+  //     setApplicationForm({
+  //       subject: "",
+  //       priorityLevel: "medium",
+  //       message: "",
+  //       attachments: [],
+  //     });
+
+  //   } catch (err) {
+  //     console.error('Error submitting application:', err);
+  //     setError(err instanceof Error ? err.message : 'Failed to submit application. Please try again.');
+  //   } finally {
+  //     setIsSubmittingApplication(false);
+  //   }
+  // };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -49,6 +143,20 @@ export default function ApplicationForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-800 font-medium">{success}</p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 font-medium">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleApplicationSubmit} className="space-y-6">
             {/* Subject and Priority Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -74,72 +182,21 @@ export default function ApplicationForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Priority Level
                 </label>
-                <select
-                  value={applicationForm.priority}
-                  onChange={(e) =>
-                    setApplicationForm((prev) => ({
-                      ...prev,
-                      priority: e.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Category and Contact Preference Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
-                <select
-                  required
-                  value={applicationForm.category}
-                  onChange={(e) =>
-                    setApplicationForm((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                >
-                  <option value="">Select a category</option>
-                  <option value="loan-inquiry">Loan Inquiry</option>
-                  <option value="payment-issue">Payment Issue</option>
-                  <option value="account-support">Account Support</option>
-                  <option value="technical-issue">Technical Issue</option>
-                  <option value="document-verification">
-                    Document Verification
-                  </option>
-                  <option value="general-inquiry">General Inquiry</option>
-                  <option value="complaint">Complaint</option>
-                  <option value="suggestion">Suggestion</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Contact Method
-                </label>
-                <select
-                  value={applicationForm.contactPreference}
-                  onChange={(e) =>
-                    setApplicationForm((prev) => ({
-                      ...prev,
-                      contactPreference: e.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                >
-                  <option value="email">Email</option>
-                  <option value="phone">Phone Call</option>
-                  <option value="both">Both Email & Phone</option>
-                </select>
+              <select
+                value={applicationForm.priorityLevel}
+                onChange={(e) =>
+                  setApplicationForm((prev) => ({
+                    ...prev,
+                    priorityLevel: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              >
+                <option value="LOW">Low Priority</option>
+                <option value="MEDIUM">Medium Priority</option>
+                <option value="HIGH">High Priority</option>
+                <option value="URGENT">Urgent</option>
+              </select>
               </div>
             </div>
 
@@ -161,9 +218,15 @@ export default function ApplicationForm() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
                 placeholder="Please provide detailed information about your request, including any relevant details that would help us assist you better..."
               />
-              <p className="mt-1 text-sm text-gray-500">
-                Minimum 20 characters required
-              </p>
+              {/* <p className="mt-1 text-sm text-gray-500">
+                {applicationForm.message.length < 20 ? (
+                  <span className="text-red-500">
+                    {20 - applicationForm.message.length} more characters required
+                  </span>
+                ) : (
+                  "Minimum 20 characters required"
+                )}
+              </p> */}
             </div>
 
             {/* File Upload */}
@@ -272,7 +335,9 @@ export default function ApplicationForm() {
               <Button
                 type="submit"
                 disabled={
-                  isSubmittingApplication || applicationForm.message.length < 20
+                  isSubmittingApplication || 
+                  applicationForm.message.length < 20 ||
+                  !applicationForm.subject.trim()
                 }
                 className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -304,12 +369,12 @@ export default function ApplicationForm() {
                 onClick={() => {
                   setApplicationForm({
                     subject: "",
-                    priority: "medium",
-                    category: "",
+                    priorityLevel: "medium",
                     message: "",
-                    contactPreference: "email",
                     attachments: [],
                   });
+                  setError(null);
+                  setSuccess(null);
                 }}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >

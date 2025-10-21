@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -93,20 +94,20 @@ export default function Footer() {
               Quick Links
             </h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-400">
-              {["home", "about", "how-it-works", "testimonials"].map(
-                (section) => (
-                  <li key={section}>
-                    <motion.button
-                      whileHover={{ x: 5, color: "#ffffff" }}
-                      onClick={() => scrollToSection(section)}
-                      className="hover:text-white transition-colors capitalize text-left text-sm sm:text-base"
-                    >
-                      {section.replace("-", " ")}
-                    </motion.button>
-                  </li>
-                )
-              )}
-            </ul>
+            {["home", "about", "how-it-works", "testimonials"].map(
+              (section) => (
+                <li key={section}>
+                  <Link
+                    to={section.toLowerCase()}
+                    className="hover:text-white transition-colors capitalize text-left text-sm sm:text-base"
+                    onClick={() => scrollToSection(section)}
+                  >
+                    {section.replace("-", " ")}
+                  </Link>
+                </li>
+              )
+            )}
+          </ul>
           </motion.div>
 
           <motion.div variants={itemVariants}>

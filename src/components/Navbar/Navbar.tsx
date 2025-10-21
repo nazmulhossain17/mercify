@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,7 +39,6 @@ export default function Navbar() {
     "projects",
     "donation",
     "faq",
-    "sign-in",
   ];
 
   return (
@@ -99,9 +98,24 @@ export default function Navbar() {
                 </motion.div>
               );
             })}
+            
+            {/* Desktop Login Button */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link to="/sign-in">
+                <Button 
+                  variant="outline" 
+                  className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Desktop Get Started Button */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link to="/sign-up">
-                <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700">
+                <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white">
                   Get Started
                 </Button>
               </Link>
@@ -175,9 +189,24 @@ export default function Navbar() {
                   </motion.div>
                 );
               })}
+              
+              {/* Mobile Login Button */}
+              <motion.div variants={itemVariants}>
+                <Link to="/sign-in" onClick={() => setIsMenuOpen(false)}>
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 mt-2"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              </motion.div>
+
+              {/* Mobile Get Started Button */}
               <motion.div variants={itemVariants}>
                 <Link to="/sign-up" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600">
+                  <Button className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
                     Get Started
                   </Button>
                 </Link>

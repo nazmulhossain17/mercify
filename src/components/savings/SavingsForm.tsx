@@ -74,7 +74,7 @@ export default function SavingsForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <h2 className="text-2xl font-bold mb-4">My Savings Transactions</h2>
+      <h2 className="text-2xl font-bold mb-4">My All Transactions</h2>
 
       {transactions.length === 0 ? (
         <p className="text-center text-muted-foreground">
