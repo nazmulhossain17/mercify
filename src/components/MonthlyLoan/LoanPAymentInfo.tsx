@@ -60,7 +60,7 @@ const LoanPaymentInfo: React.FC<LoanPaymentInfoProps> = ({ memberId }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-2 bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between text-sm sm:text-base"
+      className="mt-2 bg-white/10 backdrop-blur-sm rounded-lg p-2 flex items-center justify-between text-sm sm:text-base"
     >
       <div className="flex items-center gap-2 text-white">
         <DollarSign className="w-4 h-4" />
@@ -68,15 +68,15 @@ const LoanPaymentInfo: React.FC<LoanPaymentInfoProps> = ({ memberId }) => {
           Monthly Payment:{" "}
           <span className="font-semibold text-red-500">${monthlyPayment}</span>
         </span>
-      </div>
-
-      <div className="flex items-center gap-1 text-emerald-100 text-xs sm:text-sm">
+        <div className="flex items-center gap-1 text-emerald-100 text-xs sm:text-sm">
         <Calendar className="w-6 h-4" />
         <span>Due: {nextDueDate}</span>
         <span className="ml-2 text-emerald-50">
           ({monthsRemaining} months left)
         </span>
       </div>
+      </div>
+      
     </motion.div>
   );
 };

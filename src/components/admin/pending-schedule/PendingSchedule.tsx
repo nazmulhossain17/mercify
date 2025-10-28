@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 type Schedule = {
   _id: string
@@ -21,6 +22,7 @@ type Schedule = {
   amount: number
   paymentMethod: string
   scheduleDate: string
+  paymentType: string
   status: "processing" | "completed" | "failed"
   createdAt: string
   updatedAt: string
@@ -31,6 +33,7 @@ export default function ScheduleTable() {
   const [filteredData, setFilteredData] = useState<Schedule[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<"all" | "processing" | "completed" | "failed">("processing")
 
   // ✅ Fetch all scheduled payments
   const fetchData = async () => {
@@ -38,7 +41,6 @@ export default function ScheduleTable() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/schedule-payment`)
       const result = await res.json()
       setData(result.scheduledPayments || [])
-      setFilteredData(result.scheduledPayments || [])
     } catch (error) {
       console.error("Error fetching schedule data:", error)
       toast.error("Failed to load schedule data.")
@@ -51,15 +53,23 @@ export default function ScheduleTable() {
     fetchData()
   }, [])
 
-  // ✅ Filter by ID
+  // ✅ Filter by search term & status
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredData(data)
-    } else {
-      const term = searchTerm.toLowerCase()
-      setFilteredData(data.filter(item => item._id.toLowerCase().includes(term)))
+    let filtered = [...data]
+
+    // Filter by status
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(item => item.status === statusFilter)
     }
-  }, [searchTerm, data])
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(item => item._id.toLowerCase().includes(term))
+    }
+
+    setFilteredData(filtered)
+  }, [data, searchTerm, statusFilter])
 
   // ✅ Approve (completed) or Reject (failed)
   const handleAction = async (id: string, action: "approve" | "reject") => {
@@ -93,16 +103,31 @@ export default function ScheduleTable() {
   return (
     <Card className="p-4 shadow-lg">
       <CardContent>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
           <h2 className="text-xl font-semibold">Scheduled Payments</h2>
 
-          {/* 🔍 Search Input */}
-          <Input
-            placeholder="Search by ID..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-64"
-          />
+          <div className="flex gap-2">
+            {/* 🔍 Search Input */}
+            <Input
+              placeholder="Search by ID..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-64"
+            />
+
+            {/* 🔘 Status Filter */}
+            <Select value={statusFilter} onValueChange={value => setStatusFilter(value as any)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="processing">Pending</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {loading ? (
@@ -118,10 +143,12 @@ export default function ScheduleTable() {
                 <TableRow>
                   <TableHead className="w-[100px]">ID</TableHead>
                   <TableHead>Bank Account Name</TableHead>
-                  <TableHead>Member</TableHead>
+                  <TableHead>Member Name</TableHead>
+                  <TableHead>Email</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Payment Method</TableHead>
-                  <TableHead>Schedule Date</TableHead>
+                  <TableHead>Payment Type</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -144,11 +171,17 @@ export default function ScheduleTable() {
                       <TableCell>{item.accountName}</TableCell>
                       <TableCell>
                         {typeof item.memberId === "object"
-                          ? `${item.memberId.fullName} (${item.memberId.email})`
+                          ? `${item.memberId.fullName}`
                           : item.memberId}
+                      </TableCell>
+                      <TableCell>
+                        {typeof item.memberId === "object"
+                          ? item.memberId.email
+                          : "N/A"}
                       </TableCell>
                       <TableCell>${item.amount}</TableCell>
                       <TableCell className="capitalize">{item.paymentMethod}</TableCell>
+                      <TableCell className="">{item.paymentType}</TableCell>
                       <TableCell>
                         {new Date(item.scheduleDate).toLocaleDateString()}
                       </TableCell>
@@ -168,7 +201,8 @@ export default function ScheduleTable() {
                       <TableCell className="flex gap-2">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="default"
+                           className="bg-green-600 hover:bg-green-700 text-white"
                           onClick={() => handleAction(item._id, "approve")}
                           disabled={item.status === "completed" || item.status === "failed"}
                         >
@@ -187,7 +221,7 @@ export default function ScheduleTable() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-gray-500 py-4">
+                    <TableCell colSpan={9} className="text-center text-gray-500 py-4">
                       No scheduled payments found.
                     </TableCell>
                   </TableRow>

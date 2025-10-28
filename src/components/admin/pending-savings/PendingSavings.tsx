@@ -133,7 +133,7 @@ const PendingSavings: React.FC = () => {
                     transition={{ duration: 0.3 }}
                     className="hover:bg-gray-50"
                   >
-                    <TableCell>{saving.memberId?._id || "Unknown"}</TableCell>
+                    <TableCell>{saving.memberId?._id.slice(0, 6) || "Unknown"}</TableCell>
                     <TableCell>{saving.memberId?.fullName || "Unknown"}</TableCell>
                     <TableCell>${saving.savings_amount}</TableCell>
                     <TableCell>

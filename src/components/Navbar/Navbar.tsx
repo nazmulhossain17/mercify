@@ -38,7 +38,7 @@ export default function Navbar() {
     "contact",
     "projects",
     "donation",
-    "faq",
+    "FAQ",
   ];
 
   return (
